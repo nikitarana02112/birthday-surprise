@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Romantic Birthday Surprise</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body {
+    margin: 0;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    background: linear-gradient(270deg, #2c003e, #4a004a, #0d001a);
+    background-size: 600% 600%;
+    animation: bgFlow 40s ease infinite;
+    color: #fff;
+}
+
+@keyframes bgFlow {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+#container {
+    text-align: center;
+    z-index: 5;
+}
+
+#text {
+    font-size: 120px;
+    font-weight: bold;
+    letter-spacing: 4px;
+    text-shadow: 0 0 20px #ff9ad1, 0 0 40px #ff69b4;
+}
+
+#name {
+    margin-top: 20px;
+    font-size: 70px;
+    opacity: 0;
+    text-shadow: 0 0 25px #ffd1dc, 0 0 50px #ff69b4;
+}
+
+/* Zoom animation */
+.zoom {
+    animation: zoom 15s ease-in-out forwards;
+}
+@keyframes zoom {
+    0% { transform: scale(0.4); opacity: 0; }
+    50% { transform: scale(1.8); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* Fade + pulse */
+.fade {
+    animation: fadeIn 3s ease forwards, pulse 3s infinite alternate;
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.7); }
+    to { opacity: 1; transform: scale(1); }
+}
+@keyframes pulse {
+    from { transform: scale(1); }
+    to { transform: scale(1.05); }
+}
+
+/* Sparkles */
+.sparkle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: radial-gradient(circle, #fff, transparent);
+    border-radius: 50%;
+    animation: sparkle 3s infinite ease-in-out;
+}
+@keyframes sparkle {
+    0% { opacity: 0; transform: scale(0.2); }
+    50% { opacity: 1; transform: scale(1.5); }
+    100% { opacity: 0; transform: scale(0.2); }
+}
+
+/* Hearts */
+.heart {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background: pink;
+    transform: rotate(45deg);
+    animation: float 10s linear infinite;
+}
+.heart:before,
+.heart:after {
+    content: '';
+    width: 10px;
+    height: 10px;
+    background: pink;
+    border-radius: 50%;
+    position: absolute;
+}
+.heart:before { top: -5px; left: 0; }
+.heart:after { left: -5px; top: 0; }
+
+@keyframes float {
+    from { transform: translateY(110vh) rotate(45deg); opacity: 0; }
+    to { transform: translateY(-10vh) rotate(45deg); opacity: 0.6; }
+}
+
+/* Fireworks */
+.firework {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: gold;
+    animation: explode 1.5s ease-out forwards;
+}
+@keyframes explode {
+    from { transform: scale(0); opacity: 1; }
+    to { transform: scale(20); opacity: 0; }
+}
+</style>
+</head>
+
+<body>
+
+<div id="container">
+    <div id="text"></div>
+    <div id="name">💖 Nikita 💖</div>
+</div>
+
+<audio id="music" autoplay loop>
+    <source src="romantic.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+/* Countdown logic (same, slow-motion) */
+const textEl = document.getElementById("text");
+const nameEl = document.getElementById("name");
+const music = document.getElementById("music");
+
+const countdown = [
+    { num: "3", lines: ["I want to tell you something…"] },
+    { num: "2", lines: [
+        "I want to tell you something…",
+        "Something I feel, but never really say…"
+    ]},
+    { num: "1", lines: [
+        "I want to tell you something…",
+        "Something I feel, but never really say…",
+        "Just a feeling that comes with your smile."
+    ]}
+];
+let i = 0;
+
+function showCountdown() {
+    if (i < countdown.length) {
+
+        // STEP 1: clear previous animation
+        textEl.classList.remove("zoom");
+        textEl.innerHTML = "";
+
+        // STEP 2: force reflow (VERY IMPORTANT)
+        void textEl.offsetWidth;
+
+        // STEP 3: build lines
+        let linesHTML = countdown[i].lines
+            .map(line => `
+                <div style="
+                    font-size:22px;
+                    margin-top:10px;
+                    color:#ffe9a9;
+                    letter-spacing:1px;
+                    text-shadow:0 0 12px gold;
+                ">${line}</div>
+            `).join("");
+
+        textEl.innerHTML = `
+            <div style="font-size:90px;">${countdown[i].num}</div>
+            ${linesHTML}
+        `;
+
+        // STEP 4: apply zoom EVERY TIME
+        textEl.classList.add("zoom");
+
+        i++;
+
+        // STEP 5: after zoom completes → disappear → next number
+        setTimeout(() => {
+            textEl.style.opacity = "0";
+            setTimeout(() => {
+                textEl.style.opacity = "1";
+                showCountdown();
+            }, 800); // fade gap
+        }, 14000); // zoom duration
+
+    } else {
+        setTimeout(showBirthday, 3000);
+    }
+}
+
+function showBirthday() {
+    textEl.textContent = "HAPPY BIRTHDAY";
+    textEl.className = "fade";
+    fadeMusic();
+    showName();
+    startFireworks();
+}
+
+function showName() {
+    nameEl.style.opacity = 1;
+    nameEl.classList.add("fade");
+}
+
+/* Music auto-fade */
+function fadeMusic() {
+    let vol = 1;
+    const fade = setInterval(() => {
+        vol -= 0.02;
+        if (vol <= 0.4) clearInterval(fade);
+        music.volume = vol;
+    }, 200);
+}
+
+/* Fireworks */
+function startFireworks() {
+    setInterval(() => {
+        const fw = document.createElement("div");
+        fw.className = "firework";
+        fw.style.left = Math.random() * 100 + "vw";
+        fw.style.top = Math.random() * 100 + "vh";
+        document.body.appendChild(fw);
+        setTimeout(() => fw.remove(), 1500);
+    }, 800);
+}
+
+/* Sparkles */
+for (let i = 0; i < 80; i++) {
+    const sp = document.createElement("div");
+    sp.className = "sparkle";
+    sp.style.left = Math.random() * 100 + "vw";
+    sp.style.top = Math.random() * 100 + "vh";
+    sp.style.animationDelay = Math.random() * 3 + "s";
+    document.body.appendChild(sp);
+}
+
+/* Hearts */
+for (let i = 0; i < 30; i++) {
+    const h = document.createElement("div");
+    h.className = "heart";
+    h.style.left = Math.random() * 100 + "vw";
+    h.style.animationDuration = 8 + Math.random() * 6 + "s";
+    document.body.appendChild(h);
+}
+
+showCountdown();
+</script>
+
+</body>
+</html>
